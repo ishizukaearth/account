@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<!chatGPTによるコーディング 2026.1.6の表示を一部改変>
+<!エディターのコードはUTF-8>
+<!ロゴマークは同じディレクトリに置く>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+  body {
+    font-family:
+      "Hiragino Kaku Gothic ProN",
+      "Hiragino Sans",
+      "Noto Sans JP",
+      "Yu Gothic",
+      "Meiryo",
+      sans-serif;
+    margin: 8px;
+    font-size: 16px;
+  }
+
+  /* タイトル */
+  .title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .title-text {
+    font-size: 20px;
+    font-weight: bold;
+  }
+
+  .title-logo {
+    height: 28px;
+    width: auto;
+  }
+
+  /* 合計 */
+  .total {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 6px;
+  }
+
+  /* 食べ物表示 */
+  .note {
+    margin-bottom: 6px;
+  }
+
+  .note-food {
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .note-desc {
+    font-size: 13px;
+  }
+   .note-desc2 {
+    font-size: 10px;
+  }
+
+  /* 品目行 */
+  .item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid #ddd;
+    padding: 4px 0;
+  }
+
+  .first-drink {
+    border-top: 1px solid #999;
+    margin-top: 6px;
+    padding-top: 6px;
+  }
+
+  .name {
+    flex: 1;
+    font-size: 15px;
+  }
+
+  .price {
+    width: 60px;
+    text-align: right;
+    font-size: 14px;
+  }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  button {
+    width: 44px;
+    height: 36px;
+    font-size: 20px;
+    border: none;
+    border-radius: 6px;
+  }
+
+  .add {
+    background: #4CAF50;
+    color: #fff;
+  }
+
+  .remove {
+    background: #f44336;
+    color: #fff;
+  }
+
+  button:disabled {
+    background: #ccc;
+  }
+
+  .qty {
+    width: 28px;
+    text-align: center;
+    font-size: 16px;
+  }
+</style>
+</head>
+
+<body>
+<div id="app">
+
+  <!-- タイトル -->
+  <div class="title">
+    <span class="title-text">ももの会 新年会 会計システム</span>
+    <img src="ももアイコン.png" alt="ももの会ロゴ" class="title-logo">
+  </div>
+
+  <!-- 合計 -->
+  <div class="total">◆会費合計(税込み)：{{ total }} 円</div>
+
+  <!-- 食べ物 -->
+  <div class="note">
+    <span class="note-food">・食べ物：2400円</span>
+    <span class="note-desc">（豆腐豚チゲ鍋＋つまみ7品）</span>
+  </div>
+
+  <!-- 飲み物 -->
+  <div class="note">
+    <span class="note-food">・飲み物：</span>
+    <span class="note-desc">（下のメニューから選んで下さい）</span>
+  </div>
+  <div
+    class="item"
+    :class="{ 'first-drink': item.name === '飲み放題' }"
+    v-for="item in items"
+    :key="item.name"
+  >
+    <div class="name">{{ item.name }}</div>
+    <div class="price">{{ item.price }}円</div>
+    <div class="controls">
+      <button class="remove" @click="remove(item)" :disabled="item.qty === 0">－</button>
+      <div class="qty">{{ item.qty }}</div>
+      <button class="add" @click="add(item)">＋</button>
+    </div>
+  </div>
+    <div class="note">
+    <div class="note-disc2">* ﾊﾟｯﾋﾟｰｱﾜｰ特価</div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script>
+new Vue({
+  el: "#app",
+  data: {
+    base: 2400,
+    items: [
+      { name: "飲み放題", price: 1650, qty: 0 },
+      { name: "ドリンクバー", price: 399, qty: 0 },
+      { name: "生ビール*", price: 329, qty: 0 },
+      { name: "日本酒*", price: 274, qty: 0 },
+      { name: "ノンアルビール", price: 329, qty: 0 },
+      { name: "ハイボール(並)", price: 384, qty: 0 },
+      { name: "ハイボール(特)", price: 439, qty: 0 },
+      { name: "ワイン", price: 220, qty: 0 }
+    ]
+  },
+  computed: {
+    total() {
+      return this.base + this.items.reduce(
+        (sum, i) => sum + i.price * i.qty, 0
+      );
+    }
+  },
+  methods: {
+    add(item) {
+      item.qty++;
+    },
+    remove(item) {
+      if (item.qty > 0) item.qty--;
+    }
+  }
+});
+</script>
+
+</body>
+</html>
