@@ -1,8 +1,37 @@
 <!DOCTYPE html>
+<!-- chatGPTによるコーディング 2026.1.6の表示を一部改変>
+<!-- 正規Ver2 ユーザ項目追加機能を付加 1/7 
+		2a 食べ物・飲み物は定価表示、合計金額は税・割引込み1/12
+		2b 使用者氏名入力・表示 1/12
+		2c 追加メニュー価格は数値で1/12
+		追加メニュー削除（-をダブルクリック)時に出るダ駆除しましたのメッセジは不要
+		★これでリリースする★
+-->
+<!-- ロゴマークで送信・ショートカットアイコン -->
+<!-- エディターのコードはUTF-8 -->
+<!-- ロゴマーク3種とmanifest.jsonは同じディレクトリに置く-->
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ももの会 新年会 会計</title>
+
+  <!-- iPhone ホーム画面用アイコン -->
+  <link rel="apple-touch-icon" href="icon-180.png">
+
+  <!-- Android / Chrome 用 -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- PWA 表示調整（iPhone） -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="ももの会">
+
+  <!-- PWA 表示調整（Android） -->
+  <meta name="theme-color" content="#ffffff">
+
+  <!-- Vue.js -->
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 
 <style>
   body {
@@ -93,7 +122,6 @@
 
   .add { background: #4CAF50; color: #fff; }
   .remove { background: #f44336; color: #fff; }
-  button:disabled { background: #ccc; }
 
   .qty {
     width: 28px;
@@ -101,27 +129,13 @@
     font-size: 16px;
   }
 
-  /* 追加フォーム */
-  .add-form {
-    display: flex;
-    gap: 6px;
-    margin-top: 8px;
-    align-items: center;
-  }
-
-  .add-form input {
-    height: 32px;
+  .delete-info {
+    margin-top: 6px;
     font-size: 14px;
-    padding: 2px 6px;
-  }
-
-  .add-form button {
-    width: auto;
-    padding: 0 12px;
-    font-size: 16px;
-    height: 34px;
-    background: #2196F3;
-    color: #fff;
+    color: #c62828;
+    display: flex;
+    gap: 8px;
+    align-items: center;
   }
 </style>
 </head>
@@ -129,89 +143,164 @@
 <body>
 <div id="app">
 
-  <div class="title">
-    <span class="title-text">ももの会 新年会</span>
-    <img src="ももアイコン.png" alt="ももの会ロゴ" class="title-logo">
-  </div>
-
-  <div class="total">合計：{{ total }} 円</div>
-
+<div class="title">
+  <span class="title-text">ももの会 新年会 会計システム</span>
+  <img src="ももアイコン.png" class="title-logo">
+</div>
+<!-- 名前入力欄（2行目） -->
   <div class="note">
-    <div class="note-food">食べ物：2400円</div>
-    <div class="note-desc">（豆腐豚チゲ鍋＋つまみ９品）</div>
+    <label>
+      お名前：
+      <input
+        v-model="userName"
+        placeholder="氏名"
+        style="width:160px; font-size:18px;"
+      >
+    </label>
   </div>
 
-  <!-- 飲み物リスト -->
-  <div
-    class="item"
-    :class="{ 'first-drink': item.name === '飲み放題' }"
-    v-for="item in items"
-    :key="item.name"
-  >
-    <div class="name">{{ item.name }}</div>
-    <div class="price">{{ item.price }}円</div>
-    <div class="controls">
-      <button class="remove" @click="remove(item)" :disabled="item.qty===0">－</button>
-      <div class="qty">{{ item.qty }}</div>
-      <button class="add" @click="add(item)">＋</button>
-    </div>
-  </div>
+<div class="total">◆会費合計(税・割引込)：{{ Math.round((2251+total)*1.045) }} 円</div>
 
-  <!-- 新規追加フォーム -->
-  <div class="add-form">
-    <input type="text" v-model="newName" placeholder="品目名">
-    <input type="number" v-model.number="newPrice" placeholder="金額">
-    <button @click="addNewItem">追加</button>
+<div class="note">
+  <span class="note-food">・食べ物(定価)：2251円</span>
+  <span class="note-desc">（豆腐豚チゲ鍋＋つまみ6品）</span>
+</div>
+
+<div class="note">
+  <span class="note-food">・飲み物(定価)：{{ total }}円</span>
+  <span class="note-desc">（下のメニューから追加して下さい）</span>
+</div>
+
+<div
+  class="item"
+  :class="{ 'first-drink': item.name === '飲み放題' }"
+  v-for="item in items"
+  :key="item.name"
+  
+>
+  <div class="name">{{ item.name }}</div>
+  <div class="price">{{ item.price }}円</div>
+  <div class="controls">
+    <button class="remove" @click="remove(item)">－</button>
+    <div class="qty">{{ item.qty }}</div>
+    <button class="add" @click="add(item)">＋</button>
   </div>
+</div>
+
+<!-- ユーザ追加 -->
+<div class="note">
+  <input v-model="newName" placeholder="追加メニュー" style="width:120px">
+  <input v-model="newPrice" placeholder="価格" inputmode="numeric" style="width:80px">
+  <button @click="addCustom" style="width:80px">追加</button>
+</div>
+
+<!-- 削除メッセージ -->
+<div class="delete-info" v-if="message">
+  <span>{{ message }}</span>
+  <button v-if="canUndo" @click="undoDelete">削除を元に戻す</button>
+</div>
 
 </div>
+
+<audio id="clickSound" preload="auto">
+  <source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=">
+</audio>
 
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <script>
 new Vue({
   el: "#app",
   data: {
-    base: 2400,
-    newName: "",
-    newPrice: null,
+    base: 0,
     items: [
-      { name: "飲み放題", price: 1650, qty: 0 },
-      { name: "ドリンクバー", price: 399, qty: 0 },
-      { name: "生ビール*", price: 329, qty: 0 },
-      { name: "日本酒*", price: 274, qty: 0 },
-      { name: "ノンアルビール", price: 329, qty: 0 },
-      { name: "ハイボール並", price: 384, qty: 0 },
-      { name: "ハイボール特", price: 439, qty: 0 },
-      { name: "ワイン", price: 220, qty: 0 }
-    ]
+      { name: "飲み放題", price: 1500, qty: 0, custom: false },
+      { name: "ドリンクバー", price: 363, qty: 0, custom: false },
+      { name: "生ビール(*割引)", price: 299, qty: 0, custom: false },
+      { name: "日本酒(*割引)", price: 249, qty: 0, custom: false },
+      { name: "ノンアルビール", price: 299, qty: 0, custom: false },
+      { name: "ハイボール(並)", price: 349, qty: 0, custom: false },
+      { name: "ハイボール(特)", price: 399, qty: 0, custom: false },
+      { name: "ワイン", price: 200, qty: 0, custom: false }
+    ],
+    newName: "",
+    newPrice: "",
+    message: "",
+    pendingDelete: null,
+    lastDeleted: null,
+    timer: null
   },
   computed: {
     total() {
       return this.base + this.items.reduce(
         (sum, i) => sum + i.price * i.qty, 0
       );
+    },
+    canUndo() {
+      return this.lastDeleted !== null;
     }
   },
   methods: {
-    add(item) { item.qty++; },
-    remove(item) {
-      if (item.qty > 0) item.qty--;
+    click() {
+      const s = document.getElementById("clickSound");
+      s.currentTime = 0; s.play();
     },
-    addNewItem() {
-      if (!this.newName || !this.newPrice) return;
-      this.items.push({
-        name: this.newName,
-        price: this.newPrice,
-        qty: 0
-      });
-      this.newName = "";
-      this.newPrice = null;
+    showMessage(msg, undo=false) {
+      clearTimeout(this.timer);
+      this.message = msg;
+      if (!undo) this.lastDeleted = null;
+      this.timer = setTimeout(() => {
+        this.message = "";
+        this.lastDeleted = null;
+        this.pendingDelete = null;
+      }, 3000);
+    },
+    add(item) {
+      item.qty++;
+      this.pendingDelete = null;
+    },
+    remove(item) {
+      this.click();
+      if (!item.custom) {
+        if (item.qty > 0) item.qty--;
+        return;
+      }
+      if (item.qty > 0) {
+        item.qty--;
+        return;
+      }
+      if (this.pendingDelete !== item) {
+        this.pendingDelete = item;
+        this.showMessage("削除します");
+      } else {
+        this.lastDeleted = item;
+        this.items = this.items.filter(i => i !== item);
+        this.showMessage("", true);
+      }
+    },
+	 addCustom() {
+	  const price = Number(this.newPrice);
+	  if (!this.newName || price <= 0) return;
+
+	  this.items.push({
+	    name: this.newName,
+	    price: price,
+	    qty: 0,
+	    custom: true
+	  });
+
+	  this.newName = "";
+	  this.newPrice = "";
+	},
+    undoDelete() {
+      this.items.push(this.lastDeleted);
+      this.lastDeleted = null;
+      this.showMessage("削除を取り消しました");
     }
   }
 });
 </script>
-
 </body>
 </html>
+
 
 
