@@ -145,7 +145,7 @@
 <div id="app">
 
 <div class="title">
-  <span class="title-text">ももの会 新年会 会計システム</span>
+  <span class="title-text">ももの会 新年会 会費計算</span>
   <img src="ももアイコン.png" class="title-logo">
 </div>
 <!-- 名前入力欄（2行目） -->
@@ -159,8 +159,8 @@
       >
     </label>
   </div>
-
-<div class="total">◆会費合計(税・割引込)：{{ Math.round((2251+total)*1.045) }} 円</div>
+<div class="prepay">前払金：2500円</div>
+<div class="total">◆清算額(税・割引込)：{{ Math.round((22.51+total/100)*1.045)*100-2500 }} 円</div>
 
 <div class="note">
   <span class="note-food">食べ物(定価)：2251円</span>
@@ -337,6 +337,7 @@ new Vue({
 </script>
 </body>
 </html>
+
 
 
 
