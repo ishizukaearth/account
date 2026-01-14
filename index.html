@@ -160,8 +160,8 @@
     </label>
   </div>
 <div class="prepay">前払金：2500円</div>
-<div class="total">◆清算額(税・割引込)：{{ Math.round((22.51+total/100)*1.045)*100-2500 }} 円</div>
-
+<div class="total">◆清算額(税込)：{{ Math.round((225.1+total/10)*1.045)*10-2500 }} 
+	円 ({{ Math.round((2251+total)*1.045-2500) }})</div>
 <div class="note">
   <span class="note-food">食べ物(定価)：2251円</span>
   <span class="note-desc">（豆腐豚チゲ鍋＋つまみ6品）</span>
@@ -337,6 +337,7 @@ new Vue({
 </script>
 </body>
 </html>
+
 
 
 
