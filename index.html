@@ -5,6 +5,7 @@
 		2b 使用者氏名入力・表示 1/12
 		2c 追加メニュー価格は数値で1/12
 		追加メニュー削除（-をダブルクリック)時に出るダ駆除しましたのメッセジは不要
+		復元機能追加1/14
 		★これでリリースする★
 -->
 <!-- ロゴマークで送信・ショートカットアイコン -->
@@ -211,6 +212,7 @@
 new Vue({
   el: "#app",
   data: {
+    saveKey: "momono-kai-account-v2c",   // ← 追加
     base: 0,
     items: [
       { name: "飲み放題", price: 1500, qty: 0, custom: false },
@@ -218,8 +220,8 @@ new Vue({
       { name: "生ビール(*割引)", price: 299, qty: 0, custom: false },
       { name: "日本酒(*割引)", price: 249, qty: 0, custom: false },
       { name: "ノンアルビール", price: 299, qty: 0, custom: false },
-	  { name: "梅酒・サワー", price: 349, qty: 0, custom: false },
-      { name: "抹茶ﾊｲ・生絞りﾚﾓﾝｻﾜｰ", price: 399, qty: 0, custom: false },	
+      { name: "梅酒・サワー", price: 349, qty: 0, custom: false },
+      { name: "抹茶ﾊｲ・生絞りﾚﾓﾝｻﾜｰ", price: 399, qty: 0, custom: false },
       { name: "ワイン", price: 200, qty: 0, custom: false }
     ],
     newName: "",
@@ -239,7 +241,41 @@ new Vue({
       return this.lastDeleted !== null;
     }
   },
+  created() {
+    const saved = localStorage.getItem(this.saveKey);
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        if (data.userName !== undefined) {
+          this.userName = data.userName;
+        }
+        if (Array.isArray(data.items)) {
+          this.items = data.items;
+        }
+      } catch (e) {
+        console.warn("保存データの復元に失敗しました", e);
+      }
+    }
+  },
+  watch: {
+    userName() {
+      this.saveState();
+    },
+    items: {
+      deep: true,
+      handler() {
+        this.saveState();
+      }
+    }
+  },
   methods: {
+    saveState() {
+     const data = {
+       userName: this.userName,
+       items: this.items
+     };
+     localStorage.setItem(this.saveKey, JSON.stringify(data));
+    },
     click() {
       const s = document.getElementById("clickSound");
       s.currentTime = 0; s.play();
@@ -301,6 +337,8 @@ new Vue({
 </script>
 </body>
 </html>
+
+
 
 
 
